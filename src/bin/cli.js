@@ -153,6 +153,51 @@ function invoke(env) {
     });
 
   commander
+    .command('schema:dump')
+    .description('       Dump the current database schema.')
+    .action(function() {
+      pending = initKnex(env).schemaLoader.dump().then(function() {
+        success(chalk.green('Dumped schema successfully'));
+      }).catch(exit);
+    });
+
+  commander
+    .command('schema:load')
+    .description('       Load the schema into the database.')
+    .action(function() {
+      pending = initKnex(env).schemaLoader.load().then(function() {
+        success(chalk.green('Loaded schema successfully'));
+      }).catch(exit);
+    });
+
+  commander
+    .command('schema:drop')
+    .description('       Drop the current database schema.')
+    .action(function() {
+      pending = initKnex(env).schemaLoader.drop().then(function() {
+        success(chalk.green('Dropped schema successfully'));
+      }).catch(exit);
+    });
+
+  commander
+    .command('schema:create')
+    .description('       Create the current database schema.')
+    .action(function() {
+      pending = initKnex(env).schemaLoader.create().then(function() {
+        success(chalk.green('Created schema successfully'));
+      }).catch(exit);
+    });
+
+  commander
+    .command('schema:reset')
+    .description('       Reset the current database schema (drop, create, load).')
+    .action(function() {
+      pending = initKnex(env).schemaLoader.reset().then(function() {
+        success(chalk.green('Schema reset successfully'));
+      }).catch(exit);
+    });
+
+  commander
     .command('seed:make <name>')
     .description('       Create a named seed file.')
     .option('-x [' + filetypes.join('|') + ']', 'Specify the stub extension (default js)')

@@ -3,6 +3,7 @@ var EventEmitter   = require('events').EventEmitter
 
 var Migrator       = require('../migrate')
 var Seeder         = require('../seed')
+var SchemaLoader   = require('../schema/loader')
 var FunctionHelper = require('../functionhelper')
 var QueryInterface = require('../query/methods')
 var helpers        = require('../helpers')
@@ -94,6 +95,12 @@ module.exports = function makeKnex(client) {
     schema: {
       get: function() {
         return client.schemaBuilder()
+      }
+    },
+
+    schemaLoader: {
+      get: function() {
+        return new SchemaLoader(knex)
       }
     },
 
