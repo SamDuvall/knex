@@ -4154,6 +4154,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // Dump the schema from the database into a file
 
+	  // Dump the schema from the database into a file
+
 	  _createClass(SchemaLoader, [{
 	    key: 'dump',
 	    value: function dump(config) {
@@ -4203,25 +4205,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 	exports['default'] = SchemaLoader;
-
 	function _dump(settings, filename) {
 	  var commands = ['mysqldump', '-u' + settings.user, '--no-data', settings.database, '>', filename];
 	  var command = commands.join(' ');
 	  return exec(command);
 	}
 
+	// Load the schema into the database
 	function _load(settings, filename) {
 	  var commands = ['mysql', '-u' + settings.user, settings.database, '<', filename];
 	  var command = commands.join(' ');
 	  return exec(command);
 	}
 
+	// Drop the current schema
 	function _drop(settings) {
 	  var commands = ['mysql', '-u' + settings.user, '-e', '"DROP DATABASE IF EXISTS ' + settings.database + ';"'];
 	  var command = commands.join(' ');
 	  return exec(command);
 	}
 
+	// Create the current schema
 	function _create(settings) {
 	  var commands = ['mysql', '-u' + settings.user, '-e', '"CREATE DATABASE IF NOT EXISTS ' + settings.database + ';"'];
 	  var command = commands.join(' ');
@@ -4275,7 +4279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Promise = __webpack_require__(9);
 	var SqlString = __webpack_require__(26);
 	var helpers = __webpack_require__(3);
-	var Transaction = __webpack_require__(68);
+	var Transaction = __webpack_require__(57);
 
 	function Client_MariaSQL(config) {
 	  Client_MySQL.call(this, config);
@@ -4291,7 +4295,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Transaction: Transaction,
 
 	  _driver: function _driver() {
-	    return __webpack_require__(46);
+	    return __webpack_require__(44);
 	  },
 
 	  // Get a raw connection, called by the `pool` whenever a new
@@ -4424,16 +4428,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var inherits = __webpack_require__(53);
 
-	var Formatter = __webpack_require__(57);
+	var Formatter = __webpack_require__(58);
 	var Client = __webpack_require__(4);
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 
-	var Transaction = __webpack_require__(58);
-	var QueryCompiler = __webpack_require__(59);
-	var SchemaCompiler = __webpack_require__(60);
-	var TableCompiler = __webpack_require__(61);
-	var ColumnCompiler = __webpack_require__(62);
+	var Transaction = __webpack_require__(59);
+	var QueryCompiler = __webpack_require__(60);
+	var SchemaCompiler = __webpack_require__(61);
+	var TableCompiler = __webpack_require__(62);
+	var ColumnCompiler = __webpack_require__(63);
 
 	// Always initialize with the "QueryBuilder" and "QueryCompiler"
 	// objects, which extend the base 'lib/query/builder' and
@@ -4454,7 +4458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'mssql',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(44);
+	    return __webpack_require__(45);
 	  },
 
 	  Transaction: Transaction,
@@ -4635,11 +4639,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Promise = __webpack_require__(9);
 	var helpers = __webpack_require__(3);
 
-	var Transaction = __webpack_require__(63);
-	var QueryCompiler = __webpack_require__(64);
-	var SchemaCompiler = __webpack_require__(65);
-	var TableCompiler = __webpack_require__(66);
-	var ColumnCompiler = __webpack_require__(67);
+	var Transaction = __webpack_require__(64);
+	var QueryCompiler = __webpack_require__(65);
+	var SchemaCompiler = __webpack_require__(66);
+	var TableCompiler = __webpack_require__(67);
+	var ColumnCompiler = __webpack_require__(68);
 
 	function Client_MySQL(config) {
 	  Client.call(this, config);
@@ -4653,7 +4657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  driverName: 'mysql',
 
 	  _driver: function _driver() {
-	    return __webpack_require__(45);
+	    return __webpack_require__(46);
 	  },
 
 	  QueryCompiler: QueryCompiler,
@@ -7069,6 +7073,51 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _lodash = __webpack_require__(1);
 
+	var Transaction = __webpack_require__(16);
+	var inherits = __webpack_require__(53);
+	var debug = __webpack_require__(54)('knex:tx');
+	var helpers = __webpack_require__(3);
+
+	function Transaction_Maria() {
+	  Transaction.apply(this, arguments);
+	}
+	inherits(Transaction_Maria, Transaction);
+
+	(0, _lodash.assign)(Transaction_Maria.prototype, {
+
+	  query: function query(conn, sql, status, value) {
+	    var t = this;
+	    var q = this.trxClient.query(conn, sql)['catch'](function (err) {
+	      return err.code === 1305;
+	    }, function () {
+	      helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MariaDB (#805)');
+	    })['catch'](function (err) {
+	      status = 2;
+	      value = err;
+	      t._completed = true;
+	      debug('%s error running transaction query', t.txid);
+	    }).tap(function () {
+	      if (status === 1) t._resolver(value);
+	      if (status === 2) t._rejecter(value);
+	    });
+	    if (status === 1 || status === 2) {
+	      t._completed = true;
+	    }
+	    return q;
+	  }
+
+	});
+
+	module.exports = Transaction_Maria;
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _lodash = __webpack_require__(1);
+
 	var inherits = __webpack_require__(53);
 	var Formatter = __webpack_require__(15);
 
@@ -7096,7 +7145,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = MSSQL_Formatter;
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7201,7 +7250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_MSSQL;
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7391,7 +7440,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_MSSQL;
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7451,7 +7500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_MSSQL;
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7584,7 +7633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_MSSQL;
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7694,7 +7743,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = ColumnCompiler_MSSQL;
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7739,7 +7788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Transaction_MySQL;
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7815,7 +7864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = QueryCompiler_MySQL;
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -7865,7 +7914,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = SchemaCompiler_MySQL;
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8053,7 +8102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = TableCompiler_MySQL;
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -8178,51 +8227,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	module.exports = ColumnCompiler_MySQL;
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _lodash = __webpack_require__(1);
-
-	var Transaction = __webpack_require__(16);
-	var inherits = __webpack_require__(53);
-	var debug = __webpack_require__(54)('knex:tx');
-	var helpers = __webpack_require__(3);
-
-	function Transaction_Maria() {
-	  Transaction.apply(this, arguments);
-	}
-	inherits(Transaction_Maria, Transaction);
-
-	(0, _lodash.assign)(Transaction_Maria.prototype, {
-
-	  query: function query(conn, sql, status, value) {
-	    var t = this;
-	    var q = this.trxClient.query(conn, sql)['catch'](function (err) {
-	      return err.code === 1305;
-	    }, function () {
-	      helpers.warn('Transaction was implicitly committed, do not mix transactions and DDL with MariaDB (#805)');
-	    })['catch'](function (err) {
-	      status = 2;
-	      value = err;
-	      t._completed = true;
-	      debug('%s error running transaction query', t.txid);
-	    }).tap(function () {
-	      if (status === 1) t._resolver(value);
-	      if (status === 2) t._rejecter(value);
-	    });
-	    if (status === 1 || status === 2) {
-	      t._completed = true;
-	    }
-	    return q;
-	  }
-
-	});
-
-	module.exports = Transaction_Maria;
 
 /***/ },
 /* 69 */
