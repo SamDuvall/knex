@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import Migrator from '../migrate';
 import Seeder from '../seed';
 import FunctionHelper from '../functionhelper';
+import SchemaLoader from '../schema/loader';
 import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
 import { assign } from 'lodash'
@@ -81,6 +82,12 @@ export default function makeKnex(client) {
     schema: {
       get() {
         return client.schemaBuilder()
+      }
+    },
+
+    schemaLoader: {
+      get: function() {
+        return new SchemaLoader(knex)
       }
     },
 

@@ -83,6 +83,7 @@
   },
   "browser": {
     "bluebird/js/main/promise": "./lib/util/bluebird.js",
+    "child_process": false,
     "./lib/migrate/index.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
