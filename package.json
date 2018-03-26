@@ -79,6 +79,7 @@
     "tape": "node test/tape/index.js | tap-spec",
     "debug_tape": "node-debug test/tape/index.js",
     "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape",
+    "mssql:destroy": "docker-compose -f scripts/mssql-docker-compose.yml stop",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 3 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
@@ -105,6 +106,7 @@
     "web": "https://github.com/tgriesser"
   },
   "browser": {
+    "child_process": false,
     "./lib/migrate/index.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/index.js": "./lib/util/noop.js",
