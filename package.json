@@ -124,6 +124,7 @@
     }
   ],
   "browser": {
+    "child_process": false,
     "./lib/migrate/Migrator.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/seed/Seeder.js": "./lib/util/noop.js",

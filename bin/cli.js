@@ -268,6 +268,68 @@ function invoke(env) {
     });
 
   commander
+    .command('schema:dump')
+    .description('       Dump the current database schema.')
+    .action(function() {
+      pending = initKnex(env, commander.opts())
+        .schemaLoader.dump()
+        .then(function() {
+          success(color.green('Dumped schema successfully'));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('schema:load')
+    .description('       Load the schema into the database.')
+    .action(function() {
+      pending = initKnex(env, commander.opts())
+        .schemaLoader.load()
+        .then(function() {
+          success(color.green('Loaded schema successfully'));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('schema:drop')
+    .description('       Drop the current database schema.')
+    .action(function() {
+      pending = initKnex(env, commander.opts())
+        .schemaLoader.drop()
+        .then(function() {
+          success(color.green('Dropped schema successfully'));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('schema:create')
+    .description('       Create the current database schema.')
+    .action(function() {
+      pending = initKnex(env, commander.opts())
+        .schemaLoader.create()
+        .then(function() {
+          success(color.green('Created schema successfully'));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('schema:reset')
+    .description(
+      '       Reset the current database schema (drop, create, load).'
+    )
+    .action(function() {
+      pending = initKnex(env, commander.opts())
+        .schemaLoader.reset()
+        .then(function() {
+          success(color.green('Schema reset successfully'));
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('seed:make <name>')
     .description('        Create a named seed file.')
     .option(
